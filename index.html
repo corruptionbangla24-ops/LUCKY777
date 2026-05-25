@@ -159,9 +159,17 @@
             }
         }
 
-        // 🛫 [স্লট স্পিন কোর ইঞ্জিন ফাঞ্চন - হুবহু কালার ট্রেড ৩১১ লাইনের জিরো-এরর রেসপন্স সিঙ্ক ভাই]
+                // 🛫 [স্লট স্পিন কোর ইঞ্জিন ফাঞ্চন - হুবহু কালার ট্রেড ৩১১ লাইনের জিরো-এরর রেসপন্স সিঙ্ক ভাই]
         async function handleSpin() {
             if (isSpinning) return;
+            
+            // 🎵 [সাউন্ড বুস্টার ট্রিগার ভাই]: স্পিন বোতাম চাপার ১ মিলি-সেকেন্ডে সাউন্ড ফায়ার হবে!
+            try {
+                slotSounds.click.play();
+                slotSounds.spin.play();
+            } catch(e) { 
+                console.log("Autoplay waiting for click"); 
+            }
             
             document.getElementById("win-overlay").style.display = "none";
             const reels = document.querySelectorAll(".reel");
