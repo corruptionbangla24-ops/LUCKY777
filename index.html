@@ -192,9 +192,9 @@
                     })
                 });
 
-                const data = await response.json();
+                               const data = await response.json();
 
-                // 🎰 [উইনগো কালার ট্রেড ৩১১-৩১২ নম্বর লাইনের বিশুদ্ধ সাকসেস ট্র্যাকিং লক ভাই]
+                // 🎰 [লাকি ৭৭৭ স্লট মেগা সিকিউরিটি রেসপন্স লক ভাই]
                 if (data && data.success) {
                     balance = parseFloat(data.balance);
                     
@@ -210,9 +210,16 @@
                     }, isTurbo ? 400 : 1200);
 
                 } else {
-                    alert(data.message || "❌ Bet Declined!");
+                    // 🚨 টাকা না থাকলে অনবরত ঘুরতে থাকা চাকা ১ মিলি-সেকেন্ডে সাথে সাথে এখানে থমকে যাবে ভাই!
+                    const reels = document.querySelectorAll(".reel");
+                    reels.forEach(r => {
+                        r.classList.remove("scrolling", "turbo-mode");
+                    });
+                    
+                    alert(data.message || "❌ Insufficient Balance! Please Recharge.");
                     stopSpinState();
                 }
+ 
             } catch (err) {
                 console.error("Slot Core Network Error:", err);
                 alert("⚠️ কানেকশন এরর! আবার চেষ্টা করুন।");
