@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 });
 
 // 🎰 [উইনগো কালার ট্রেড ওরিজিনাল ডোমেইন সিঙ্ক]: আপনার ওরিজিনাল মেইন সাইটের ডাটাবেজ ব্যাকএন্ড লিঙ্ক
-const MAIN_SITE_URL = "https://onrender.com"; 
+const MAIN_SITE_URL = "https://betlover247.onrender.com"; 
 
 // 📥 আপনার ফোল্ডারে থাকা ওরিজিনাল ১০টি প্রতীকের নাম সিঙ্ক লিস্ট ভাই
 const symbolsList = ['apple', 'banana', 'beer-bottle', 'begun', 'coin', 'dollar', 'jambura', 'rose', 'seven', 'water-bottle'];
