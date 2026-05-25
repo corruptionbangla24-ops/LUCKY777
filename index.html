@@ -74,6 +74,18 @@
 
         // 🎯 [নতুন কাস্টম স্লট প্রতীক মেমোরি লক ভাই]: আপনার পাঠানো স্ক্রিনশটের ১০টি ওরিজিনাল ছবির নাম সিঙ্ক
         const symbols = ['apple', 'banana', 'beer-bottle', 'begun', 'coin', 'dollar', 'jambura', 'rose', 'seven', 'water-bottle'];
+        // 🎵 [লাকি ৭৭৭ স্লট অডিও মাস্টার ইঞ্জিন ভাই]: এটি আপনার ৪টি সাউন্ড ফাইলকে ১ মিলি-সেকেন্ডে সচল করবে!
+        const slotSounds = {
+            click: new Audio('click.mp3'),
+            spin: new Audio('spin.mp3'),
+            win: new Audio('win.mp3'),
+            bigwin: new Audio('bigwin.mp3')
+        };
+
+        // অডিও ফাইল লোড প্রি-ক্যাশিং বুস্টার লক ভাই
+        Object.values(slotSounds).forEach(sound => {
+            sound.load();
+        });
 
         // ৩x৪ গ্রিড এলিমেন্ট বোর্ড ইনিশিয়াল ডাইরেক্ট ছবি লোডার গেটওয়ে
         const board = document.getElementById("machine-board");
