@@ -230,7 +230,16 @@
                 reels[i].innerHTML = `<img src="./${symbolImg}.png" alt="${symbolImg}">`;
             }
 
-            if (winAmount > 0) {
+                        if (winAmount > 0) {
+                // 🎵 [মেগা উইন সাউন্ড ইঞ্জিন ভাই]: বাজি জিতলে লাভ অনুযায়ী বাকি ২টি সাউন্ড এখানে বাজবে!
+                try {
+                    if (winAmount >= (currentBet * 5)) {
+                        slotSounds.bigwin.play(); // ৫ গুণের বেশি জিতলে বিগউইন বাজবে ভাই!
+                    } else {
+                        slotSounds.win.play(); // নরমাল জিতলে সাধারণ উইন বাজবে ভাই!
+                    }
+                } catch(e) { console.log("Audio play blocked by browser"); }
+
                 document.getElementById("win-display").innerText = `৳${winAmount}`;
                 document.getElementById("win-overlay").style.display = "block";
                 
@@ -242,6 +251,7 @@
                     }
                 });
             }
+
 
             document.getElementById("user-balance").innerText = balance.toFixed(2);
             stopSpinState();
