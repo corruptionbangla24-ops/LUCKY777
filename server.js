@@ -70,7 +70,7 @@ app.post('/api/slot-spin', async (req, res) => {
         }
 
 
-        const currentDbBalance = parseFloat(balCheck.data.balance);
+        
 
         // 🚨 [কঠোর টাকা চেকিং লুপ]: অ্যাকাউন্টের টাকার চেয়ে বাজির টাকা ১ পয়সা বেশি হলেও গেম এখানেই ডেড স্টপ হবে ভাই ভাই!
         if (currentDbBalance < reqAmount) {
