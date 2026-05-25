@@ -48,12 +48,28 @@ app.get('/api/slot-balance', async (req, res) => {
     }
 });
 
-// 🛫 ২. স্লট স্পিন মেগা এপিআই রাউট (POST Route - হুবহু কালার ট্রেডের ডেটা অবজেক্ট ও উইন লজিক সিঙ্ক ভাই)
+// 🛫 ২. স্লট স্পিন মেগা এপিআই রাউট (POST Route - কালার ট্রেড ওরিজিনাল কড়া ব্যালেন্স ভ্যালিডেশন লক ভাই!)
 app.post('/api/slot-spin', async (req, res) => {
     const { userId, amount, wallet } = req.body;
     const targetWallet = wallet || "main";
+    const reqAmount = parseFloat(amount) || 10;
 
     try {
+        // 🎯 [মেগা সিকিউরিটি বর্ম ১]: বাজি ধরার ঠিক ১ মিলি-সেকেন্ড আগে ডাটাবেজ থেকে আসল টাকা রিড ভাই
+        const balCheck = await axios.get(`${MAIN_SITE_URL}/api_callback.php?action=get_balance&username=${userId}&wallet=${targetWallet}`, { timeout: 10000 });
+        
+        // যদি ডাটাবেজ রেসপন্স না দেয় বা ব্যালেন্স ফাঁকা (undefined) আসে, তবে সরাসরি রিজেক্ট লক ভাই
+        if (!balCheck.data || balCheck.data.status !== "ok" || balCheck.data.balance === undefined || balCheck.data.balance === null) {
+            return res.json({ success: false, balance: 0, message: "❌ Session Error! Try again." });
+        }
+
+        const currentDbBalance = parseFloat(balCheck.data.balance);
+
+        // 🚨 [কঠোর টাকা চেকিং লুপ]: অ্যাকাউন্টের টাকার চেয়ে বাজির টাকা ১ পয়সা বেশি হলেও গেম এখানেই ডেড স্টপ হবে ভাই ভাই!
+        if (currentDbBalance < reqAmount) {
+            return res.json({ success: false, balance: currentDbBalance, message: "❌ Insufficient Balance! Please Recharge." });
+        }
+
         // 🎰 ক্যাসিনো রুলস অনুযায়ী ৩x৪ গ্রিডের জন্য ১২টি র‍্যান্ডম প্রতীক জেনারেট হলো ভাই
         let matrix = [];
         for (let i = 0; i < 12; i++) {
@@ -61,36 +77,34 @@ app.post('/api/slot-spin', async (req, res) => {
             matrix.push(symbolsList[randomIndex]);
         }
 
-        // 🎯 উইন ম্যাথমেটিক্স লজিক (৩টি একই প্রতীক পাশাপাশি মিললে প্লেয়ার জিতবে ভাই)
         let winLines = [];
         let multiplier = 0;
 
         // ৪টি লাইনে পাশাপাশি ৩টি ঘর চেকিং প্রোটোকল লক ভাই
         const rows = [
-            [0, 1, 2],   // Row 1
-            [3, 4, 5],   // Row 2
-            [6, 7, 8],   // Row 3
-            [9, 10, 11]  // Row 4
+            [0, 1, 2],    // Row 1
+            [3, 4, 5],    // Row 2
+            [6, 7, 8],    // Row 3
+            [9, 10, 11]   // Row 4
         ];
 
         rows.forEach(line => {
             if (matrix[line[0]] === matrix[line[1]] && matrix[line[1]] === matrix[line[2]]) {
                 winLines.push(...line);
-                multiplier += 3.50; // ৩টি মিললে সাড়ে ৩ গুণ লাভ ভাই ভাই!
+                multiplier += 3.50; 
             }
         });
 
-        // স্পেশাল লাকি 'seven' বা 'dollar' মিললে জ্যাকপট ডবল বুস্ট ভাই
         if (matrix[0] === 'seven' || matrix[4] === 'dollar' || matrix[8] === 'seven') {
             multiplier += 0.50;
         }
 
         let winAmount = 0;
         let dbAction = "bet";
-        let dbAmount = parseFloat(amount);
+        let dbAmount = reqAmount;
 
         if (multiplier > 0) {
-            winAmount = Math.floor(parseFloat(amount) * multiplier);
+            winAmount = Math.floor(reqAmount * multiplier);
             dbAction = "win";
             dbAmount = parseFloat(winAmount);
         }
@@ -103,9 +117,8 @@ app.post('/api/slot-spin', async (req, res) => {
             wallet: targetWallet
         };
 
-        // যদি উইন হয়, তবে কালার ট্রেড ও এভিয়েটরের ওরিজিনাল ১৬৫-১৮০ নম্বর লাইনের মেগা উইন প্যারামিটার লক ভাই
         if (dbAction === "win") {
-            phpPayload.bet_amount = parseFloat(amount);
+            phpPayload.bet_amount = reqAmount;
             phpPayload.multiplier = parseFloat(multiplier).toFixed(2);
             phpPayload.status = "win";
             phpPayload.type = "win";
@@ -116,8 +129,8 @@ app.post('/api/slot-spin', async (req, res) => {
 
         const response = await axios.post(MAIN_SITE_URL + '/api_callback.php', phpPayload, { timeout: 15000 });
 
-        if (response.data && response.data.status === "ok") {
-            // 🎰 [উইনগো কালার ট্রেড ১৫৮ নম্বর লাইনের হুবহু ওরিজিনাল সকেট ব্রডকাস্ট ফায়ার ভাই]
+        // 🎯 [মেগা সিকিউরিটি বর্ম ২]: পিএইচপি ডাটাবেজ সাকসেসফুলি 'ok' ওরিজিনাল স্ট্যাটাস দিলেই কেবল উইন/বেট কাউন্ট হবে ভাই
+        if (response.data && response.data.status === "ok" && response.data.balance !== undefined) {
             io.emit("balanceUpdate", { username: userId, balance: response.data.balance });
 
             return res.json({
@@ -128,14 +141,21 @@ app.post('/api/slot-spin', async (req, res) => {
                 winLines: [...new Set(winLines)]
             });
         } else {
-            return res.json({ success: false, message: response.data.message || "❌ Database Decline!" });
+            // যদি পিএইচপি ডাটাবেজ রিজেক্ট করে (যেমন কম টাকার কারণে), তবে এক্সপ্রেস সার্ভারও ফ্রন্টএন্ডে এরর ছিটকে দিবে ভাই ভাই!
+            let latestBal = (response.data && response.data.balance !== undefined) ? response.data.balance : currentDbBalance;
+            return res.json({ success: false, balance: latestBal, message: response.data.message || "❌ Bet Declined by Database!" });
         }
 
     } catch (e) {
         console.error("Slot Core Database Synced Error:", e.message);
-        return res.json({ success: false, message: "⚠️ Timeout! Try again." });
+        return res.json({ success: false, message: "⚠️ Connection Timeout! Try again." });
     }
 });
+
+
+
+
+        
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
